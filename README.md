@@ -1,2 +1,2 @@
-# weather-station
-A Raspberry Pi powered weather station
+# Weather Station
+A Raspberry Pi powered weather station project.
