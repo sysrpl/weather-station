@@ -10,15 +10,15 @@ squish = 0.5;
 feet_offset = 5;
 mid_x = 36.225;
 
-enable_bottom = 1;
+enable_bottom = 10;
 enable_board = 0;
-enable_top = 0;
 enable_grill = 1;
 enable_feet = 1;
 enable_lid = 1;
 enable_standoffs = 1;
 enable_explode = 1;
 enable_heat = 1;
+enable_lcd = 1;
 
 module gpio() {
     translate([mid_x + 5, 110, 29])
@@ -113,14 +113,13 @@ module bottom() {
                 linear_extrude(height = 20)
                    import(dxf, layer = "SIDE");
         }
-                // round snaps
-                color([0, 1, 1])
-                translate([36.225 - 10, 10.5, 25.5])
-                sphere(1.5, $fn = 32);
-                color([0, 1, 1])
-                translate([36.225 + 10, 10.5, 25.5])
-                sphere(1.5, $fn = 32);
-        
+        // round snaps
+        color([0, 1, 1])
+        translate([36.225 - 10, 10.5, 25.0])
+        sphere(1.75, $fn = 32);
+        color([0, 1, 1])
+        translate([36.225 + 10, 10.5, 25.0])
+        sphere(1.75, $fn = 32);
     }
     difference() {
         translate([0, 0, 1.5]) {
@@ -147,56 +146,11 @@ module bottom() {
                    import(dxf, layer = "BOARD_OUTLINE");
             }
         }
-        //translate([-40, 0, 10])
-        //cube([200, 200, 50]);
     }
     translate([0, 0, 1.5])
     linear_extrude(height = 25.2 + extend - 1.7)
        import(dxf, layer = "HEAT_TABS");
     
-}
-
-module top() {
-    difference() {
-        translate([0, 0, 1.5]) {
-            difference() {
-                linear_extrude(height = 25 + extend)
-                   import(dxf, layer = "WALL_TOP");
-                translate([0, 20, 12.5 + standoff])
-                rotate([90, 0, 0])
-                linear_extrude(height = 20)
-                   import(dxf, layer = "FRONT_FIT");
-                translate([90, 0, 136.5 + standoff])
-                rotate([0, 90, 0])
-                linear_extrude(height = 20)
-                   import(dxf, layer = "SIDE");
-                // round snaps
-                color([0, 1, 1])
-                translate([36.725 - 10, 10.5, 25.5])
-                sphere(1.5, $fn = 32);
-                color([0, 1, 1])
-                translate([36.725 + 10, 10.5, 25.5])
-                sphere(1.5, $fn = 32);
-                linear_extrude(height = 26.5 + extend)
-                   import(dxf, layer = "HEAT_GROOVE");
-            }
-        }
-        translate([-40, 0, -42])
-        cube([200, 200, 50]);
-        linear_extrude(height = 10)
-           import(dxf, layer = "WALL_BEVEL");
-        color([0.5, 0.5, 0])
-        translate([95.2, 10.52, 0])
-        cube([10, 56.5, 25]);
-        translate([-40, 25, 5])
-        grilled();
-        translate([5, 105, 5])
-        rotate([0, 0, -90])
-        grilled(15);
-    }
-    translate([0, 0, 1.7])
-    linear_extrude(height = 26.5 + extend - 1.7)
-       import(dxf, layer = "HEAT_TABS");
 }
 
 module heat() {
@@ -255,17 +209,36 @@ module lid() {
     }
 }
 
+module lcd() {
+    scale([1, 1, -1])
+    union() {
+        difference() {
+            union() {
+                linear_extrude(height = 2) 
+                import(dxf, layer = "LID_BACK");
+                linear_extrude(height = 5.5)
+                import(dxf, layer = "LID_STANDS", $fn = 6);
+            }
+            translate([0, 0, -1])
+            linear_extrude(height = 8)
+            import(dxf, layer = "LID_POSTS");
+        }
+        linear_extrude(height = 7)
+        import(dxf, layer = "LID_TABS");
+        
+        // round snaps
+        color([0, 1, 1])
+        translate([36.225 - 10, 10.5, 3.5])
+        sphere(1.5, $fn = 32);
+        color([0, 1, 1])
+        translate([36.225 + 10, 10.5, 3.5])
+        sphere(1.5, $fn = 32);
+    }
+}
+
+
 if (enable_bottom > 0)
     bottom();
-if (enable_top > 0) {
-    if (enable_explode > 0)
-        translate([0, 0, 20])
-        top();
-    if (enable_explode == 0)
-        translate([230, 0, 26.5])
-        rotate([0, 180, 0])        
-        top();
-}
 
 if (enable_heat > 0) {
     if (enable_explode > 0)
@@ -283,4 +256,13 @@ if (enable_lid > 0) {
         lid();
     if (enable_explode == 0)
         lid();
+}
+
+if (enable_lcd > 0) {
+    if (enable_explode > 0)
+        translate([0, 0, 75])
+        lcd();
+    if (enable_explode == 0)
+        rotate([0, 180, 0])
+        lcd();
 }
