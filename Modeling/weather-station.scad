@@ -10,7 +10,7 @@ squish = 0.5;
 feet_offset = 5;
 mid_x = 36.225;
 
-enable_bottom = 10;
+enable_bottom = 1;
 enable_board = 0;
 enable_grill = 1;
 enable_feet = 1;
