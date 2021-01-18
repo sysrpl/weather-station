@@ -6,7 +6,7 @@ grill_hole = 1;
 grill_size = 15;
 grill_slant = 0.8;
 extend = 4;
-squish = 0.5;
+squish = 0.125;
 feet_offset = 5;
 mid_x = 36.225;
 
@@ -14,11 +14,17 @@ enable_bottom = 1;
 enable_board = 0;
 enable_grill = 1;
 enable_feet = 1;
-enable_lid = 1;
+enable_lid = 0;
 enable_standoffs = 1;
-enable_explode = 1;
-enable_heat = 1;
-enable_lcd = 1;
+enable_explode = 0;
+enable_heat = 0;
+enable_lcd = 0;
+enable_align = 0;
+
+module align() {
+    linear_extrude(height = 15) 
+    import(dxf, layer = "LCD_ALIGN");
+}
 
 module gpio() {
     translate([mid_x + 5, 110, 29])
@@ -51,19 +57,19 @@ module grilled(count = 10, deep = -10) {
 module feet() {
     if (enable_feet > 0) {
         color([0, 0.75, 0.5])
-        translate([-24.5 + feet_offset, 16 + feet_offset, -3])
+        translate([-24.5 + feet_offset, 16 + feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
         color([0, 0.75, 0.5])
-        translate([98 - feet_offset, 16 + feet_offset, -3])
+        translate([98 - feet_offset, 16 + feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
         color([0, 0.75, 0.5])
-        translate([98 - feet_offset, 88 - feet_offset, -3])
+        translate([98 - feet_offset, 88 - feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
         color([0, 0.75, 0.5])
-        translate([-24.5 + feet_offset, 88 - feet_offset, -3])
+        translate([-24.5 + feet_offset, 88 - feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
     }
@@ -72,12 +78,11 @@ module feet() {
 module bottom() {
     difference() { 
         union () {
-            linear_extrude(height = 1.5) 
-            import(dxf, layer = "BOTTOM");
+            translate([0, 0, 0.5])
             hull() {
                 linear_extrude(height = 1) 
                 import(dxf, layer = "BOTTOM");
-                translate([0, 0, -3])
+                translate([0, 0, -1])
                 linear_extrude(height = 1) 
                 import(dxf, layer = "BOTTOM_BEVEL");
                 
@@ -87,14 +92,14 @@ module bottom() {
                    import(dxf, layer = "WALL");
         }
         if (enable_standoffs > 0) {
-            translate([0, 0, -2])
+            translate([0, 0, 0.5])
             color([0.2, 1, 0])
             linear_extrude(height = standoff + 3)
                import(dxf, layer = "PIN_POSTS");
         }
         gpio();
         feet();
-        translate([0, 0, 0])
+        translate([0, 0, 1])
         linear_extrude(height = 26.5)
            import(dxf, layer = "HEAT_GROOVE");
         translate([-42, 27, 5])
@@ -216,7 +221,7 @@ module lcd() {
             union() {
                 linear_extrude(height = 2) 
                 import(dxf, layer = "LID_BACK");
-                linear_extrude(height = 5.5)
+                linear_extrude(height = 4.5)
                 import(dxf, layer = "LID_STANDS", $fn = 6);
             }
             translate([0, 0, -1])
@@ -229,10 +234,10 @@ module lcd() {
         // round snaps
         color([0, 1, 1])
         translate([36.225 - 10, 10.5, 3.5])
-        sphere(1.5, $fn = 32);
+        sphere(1.7, $fn = 32);
         color([0, 1, 1])
         translate([36.225 + 10, 10.5, 3.5])
-        sphere(1.5, $fn = 32);
+        sphere(1.7, $fn = 32);
     }
 }
 
@@ -265,4 +270,9 @@ if (enable_lcd > 0) {
     if (enable_explode == 0)
         rotate([0, 180, 0])
         lcd();
+}
+
+
+if (enable_align > 0) {
+    align();
 }
