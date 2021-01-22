@@ -1,3 +1,5 @@
+use <standoffs.scad>;
+
 $fn = 128;
 dxf = "weather-station.dxf";
 standoff = 3;
@@ -7,18 +9,18 @@ grill_size = 15;
 grill_slant = 0.8;
 extend = 4;
 squish = 0.125;
-feet_offset = 5;
+feet_offset = 0;
 mid_x = 36.225;
 
-enable_bottom = 1;
+enable_bottom = 0;
 enable_board = 0;
 enable_grill = 1;
 enable_feet = 1;
 enable_lid = 0;
 enable_standoffs = 1;
-enable_explode = 0;
-enable_heat = 0;
-enable_lcd = 0;
+enable_explode = 1;
+enable_heat = 1;
+enable_cover = 0;
 enable_align = 0;
 
 module align() {
@@ -56,20 +58,31 @@ module grilled(count = 10, deep = -10) {
 
 module feet() {
     if (enable_feet > 0) {
+        translate([-24.85, 16.5, -0.5])
         color([0, 0.75, 0.5])
-        translate([-24.5 + feet_offset, 16 + feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
+        scale([1, 1, -1])
+        translate([-24.85, 16.5, 0])
+        countersink(10);
+        translate([-24.85, 88.5, -0.5])
         color([0, 0.75, 0.5])
-        translate([98 - feet_offset, 16 + feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
+        scale([1, 1, -1])
+        translate([-24.85, 88.5, 0])
+        countersink(10);
+
+        translate([97.3, 88.5, -0.5])
         color([0, 0.75, 0.5])
-        translate([98 - feet_offset, 88 - feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
+        scale([1, 1, -1])
+        translate([97.3, 88.5, 0])
+        countersink(10);
+
+        translate([97.3, 16.5, -0.5])
         color([0, 0.75, 0.5])
-        translate([-24.5 + feet_offset, 88 - feet_offset, -0.5])
         scale([1, 1, squish])
         sphere(4.5, $fn = 32);
     }
@@ -87,62 +100,56 @@ module bottom() {
                 import(dxf, layer = "BOTTOM_BEVEL");
                 
             }
+            translate([-24.85, 16.5, 0])
+                sleeve(3.5, 5);
+            translate([-24.85, 88.5, 0])
+                sleeve(3.5, 5);
+            translate([97.3, 88.5, 0])
+                sleeve(3.5, 5);
             translate([0, 0, 1.5])
                 linear_extrude(height = 27.5)
-                   import(dxf, layer = "WALL");
+                import(dxf, layer = "WALL");
         }
         if (enable_standoffs > 0) {
-            translate([0, 0, 0.5])
-            color([0.2, 1, 0])
-            linear_extrude(height = standoff + 3)
-               import(dxf, layer = "PIN_POSTS");
+            translate([20.5, 13.5, 1.6])
+            standoffDrill(1);
+            translate([82.75, 13.5, 1.6])
+            standoffDrill(1);
+            translate([82.75, 62.5, 1.6])
+            standoffDrill(1);
         }
         gpio();
         feet();
         translate([0, 0, 1])
         linear_extrude(height = 26.5)
            import(dxf, layer = "HEAT_GROOVE");
-        translate([-42, 27, 5])
+        translate([-43, 27, 5])
         grilled(10);
-        translate([5, 105, 5])
+        translate([4, 104.5, 5])
         rotate([0, 0, -90])
         grilled(15);
         translate([0, 0, 1.5]) {
-                translate([0, 20, 12.5 + standoff])
-                rotate([90, 0, 0])
-                linear_extrude(height = 20)
-                   import(dxf, layer = "FRONT");
-
-                translate([90, 0, 136.5 + standoff])
-                rotate([0, 90, 0])
-                linear_extrude(height = 20)
-                   import(dxf, layer = "SIDE");
+            translate([0, 10, 12.5 + standoff])
+            rotate([90, 0, 0])
+            linear_extrude(height = 4)
+               import(dxf, layer = "FRONT", $fn = 32);
+            translate([90, 0, 136.5 + standoff])
+            rotate([0, 90, 0])
+            linear_extrude(height = 20)
+               import(dxf, layer = "SIDE");
         }
-        // round snaps
-        color([0, 1, 1])
-        translate([36.225 - 10, 10.5, 25.0])
-        sphere(1.75, $fn = 32);
-        color([0, 1, 1])
-        translate([36.225 + 10, 10.5, 25.0])
-        sphere(1.75, $fn = 32);
     }
     difference() {
         translate([0, 0, 1.5]) {
-            difference() {
-                
-            }
-
             if (enable_standoffs > 0) {
-                difference() {
-                    union() {
-                        linear_extrude(height = standoff + 0.5)
-                           import(dxf, layer = "PIN_STANDS", $fn = 6);
-                    }
-                    translate([0, 0, -2])
-                    color([0.2, 1, 0])
-                    linear_extrude(height = standoff + 3)
-                       import(dxf, layer = "PIN_POSTS");
-                }
+                translate([20.5, 13.5, 0])
+                standoff(3.5, 1.5);
+                translate([82.75, 13.5, 0])
+                standoff(3.5, 1.5);
+                translate([82.75, 62.5, 0])
+                standoff(3.5, 1.5);
+                translate([20.5, 62.5, 0])
+                standoff(3.5, 1.5);
             }
             if (enable_board > 0) {
                 translate([0, 0, standoff + 0.5])
@@ -161,31 +168,21 @@ module bottom() {
 module heat() {
     slide = 10;
     difference() {
-        union() {
-            translate([0, 0, -0.25])
-            linear_extrude(height = 26.75 + extend)
-            import(dxf, layer = "HEAT");
-            translate([-20.75, 68 + slide, (26.75 + extend) / 2])
-            rotate([90, 0, 90])
-            cylinder(r = 3, h = 4, $fn = 6);
-            translate([-19.3, 40 + slide, (26.75 + extend) / 2])
-            rotate([90, 0, 90])
-            cylinder(r = 3, h = 2, $fn = 6);
-        }
-        color([1, 0, 0])
-        translate([-20, 16, 0])
+        translate([0, 0, -0.25])
+        linear_extrude(height = 26.2 + extend)
+        import(dxf, layer = "HEAT");
+        translate([-20, 23, 0])
         rotate([0, 90, 0])
         cylinder(r = 2.75, h = 10);
-        color([1, 0, 0])
-        translate([-22, 68 + slide, (26.75 + extend) / 2])
-        rotate([0, 90, 0])
-        cylinder(r = 1, h = 5.2);
-        color([1, 0, 0])
-        translate([-21, 40 + slide, (26.75 + extend) / 2])
-        rotate([0, 90, 0])
-        cylinder(r = 1, h = 4.2);
     }
-    
+    translate([-17.20, 68 + slide, (26.75 + extend) / 2])
+    rotate([90, 0, 90])
+    scale(-1)
+    standoffNoTaper(3.5, 1.5);
+    translate([-17.20, 40 + slide, (26.75 + extend) / 2])
+    rotate([90, 0, 90])
+    scale(-1)
+    standoffNoTaper(2.5, 0.5);
 }
 
 module lid() {
@@ -214,30 +211,45 @@ module lid() {
     }
 }
 
-module lcd() {
-    scale([1, 1, -1])
-    union() {
+module cover() {
+    scale([1, 1, -1]) {
         difference() {
-            union() {
-                linear_extrude(height = 2) 
-                import(dxf, layer = "LID_BACK");
-                linear_extrude(height = 4.5)
-                import(dxf, layer = "LID_STANDS", $fn = 6);
-            }
+            linear_extrude(height = 1) 
+            import(dxf, layer = "BOTTOM");
             translate([0, 0, -1])
-            linear_extrude(height = 8)
-            import(dxf, layer = "LID_POSTS");
+            linear_extrude(height = 3) 
+            import(dxf, layer = "LCD");
+            translate([-10.275, 25, 1])
+            standoffDrill(2);
+            translate([-10.275, 80, 1])
+            standoffDrill(2);
+            translate([82.725, 80, 1])
+            standoffDrill(2);
+            translate([82.725, 25, 1])
+            standoffDrill(2);
         }
-        linear_extrude(height = 7)
-        import(dxf, layer = "LID_TABS");
-        
-        // round snaps
-        color([0, 1, 1])
-        translate([36.225 - 10, 10.5, 3.5])
-        sphere(1.7, $fn = 32);
-        color([0, 1, 1])
-        translate([36.225 + 10, 10.5, 3.5])
-        sphere(1.7, $fn = 32);
+        linear_extrude(height = 4) 
+        import(dxf, layer = "COVER");
+        linear_extrude(height = 6) 
+        import(dxf, layer = "COVER_EDGE");
+        translate([-24.85, 16.5, 1])
+        standoffPost(30.25, 3.4);
+        translate([-24.85, 16.5, 1])
+        standoffPost(30, 3.4);
+        translate([-24.85, 88.5, 1])
+        standoffPost(30.25, 3.4);
+        translate([97.3, 88.5, 1])
+        standoffPost(30.25, 3.4);
+        translate([97.3, 88.5, 1])
+        standoffPost(27.4, 3.4);
+        translate([-10.275, 25, 0])
+        standoffNoTaper(3.5, 1.5);
+        translate([-10.275, 80, 0])
+        standoffNoTaper(3.5, 1.5);
+        translate([82.725, 80, 0])
+        standoffNoTaper(3.5, 1.5);
+        translate([82.725, 25, 0])
+        standoffNoTaper(3.5, 1.5);
     }
 }
 
@@ -247,7 +259,7 @@ if (enable_bottom > 0)
 
 if (enable_heat > 0) {
     if (enable_explode > 0)
-        translate([0, 0, 34])
+        translate([0, 0, 33.5])
         heat();
     if (enable_explode == 0)
         translate([140, -10, 19.35])
@@ -257,19 +269,20 @@ if (enable_heat > 0) {
 
 if (enable_lid > 0) {
     if (enable_explode > 0)
-        translate([0, 0, 75])
+        translate([0, 0, 80])
         lid();
     if (enable_explode == 0)
         lid();
+    
 }
 
-if (enable_lcd > 0) {
-    if (enable_explode > 0)
-        translate([0, 0, 75])
-        lcd();
+if (enable_cover > 0) {
+    if (enable_explode > 0) 
+        translate([0, 0, 80])
+        cover();
     if (enable_explode == 0)
-        rotate([0, 180, 0])
-        lcd();
+        translate([140, -100, 19.35])
+        rotate([90, 90, 0]);
 }
 
 
